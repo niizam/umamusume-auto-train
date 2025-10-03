@@ -8,7 +8,7 @@
   ],
   "minimum_mood": "GREAT",
   "maximum_failure": 15,
-  "prioritize_g1_race": false,
+  "prioritize_g1_race": true,
   "skill_point_cap": 1000,
   "enable_skill_point_check": true,
   "min_support": 0,
@@ -19,5 +19,11 @@
     "pwr": 600,
     "guts": 600,
     "wit": 600
+  },
+  "llm": {
+    "enabled": false,
+    "model": "gpt-4o-mini",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-..."
   }
 }

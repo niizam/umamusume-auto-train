@@ -1,5 +1,6 @@
 import json
 
+from core.llm import decide_training_action
 from core.state import check_current_year, stat_state
 
 with open("config.json", "r", encoding="utf-8") as file:
@@ -11,6 +12,8 @@ STAT_CAPS = config["stat_caps"]
 MIN_SUPPORT = config.get("min_support", 0)
 DO_RACE_WHEN_BAD_TRAINING = config.get("do_race_when_bad_training", True)
 MIN_CONFIDENCE = 0.5  # Minimum confidence threshold for training decisions (currently used for retry logic)
+LLM_CONFIG = config.get("llm", {})
+
 
 # Get priority stat from config
 def get_stat_priority(stat_key: str) -> int:
@@ -133,6 +136,40 @@ def do_something(results):
   if not filtered:
     print("[INFO] All stats capped or no valid training.")
     return None
+
+  llm_context = {
+    "current_year": year,
+    "current_stats": current_stats,
+    "training_options": filtered,
+    "raw_training_options": results,
+    "priority_order": PRIORITY_STAT,
+    "maximum_failure": MAX_FAILURE,
+    "minimum_support": MIN_SUPPORT,
+    "do_race_when_bad_training": DO_RACE_WHEN_BAD_TRAINING,
+    "stat_caps": STAT_CAPS,
+  }
+
+  llm_decision = decide_training_action(LLM_CONFIG, llm_context)
+  if llm_decision:
+    reason = llm_decision.get("reason")
+    if reason:
+      print(f"[LLM] {reason}")
+
+    action = llm_decision.get("action")
+    if action == "train":
+      stat = llm_decision.get("stat")
+      if stat in filtered:
+        return stat
+      else:
+        print(f"[LLM] Requested unknown or capped stat '{stat}'. Falling back to heuristics.")
+    elif action == "rest":
+      return None
+    elif action == "race":
+      return "PRIORITIZE_RACE"
+    elif action == "fallback":
+      print("[LLM] Requested fallback to heuristic rules.")
+    else:
+      print(f"[LLM] Unknown action '{action}'. Falling back to heuristics.")
 
   if "Pre-Debut" in year:
     return most_support_card(filtered)
