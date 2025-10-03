@@ -24,6 +24,7 @@ This project is inspired by [samsulpanjul/umamusume-auto-train](https://github.c
 - Improved training logic with better support card handling
 - Minimum support card requirements for training (Read Logic)
 - **Intelligent Event Choice Selection**: Automatically analyzes event options and selects the best choice based on configured priorities
+- **Optional LLM-powered decision making**: Send OCR data to an OpenAI-compatible model to pick the next action via tool calls
 
 ## Getting Started
 
@@ -82,6 +83,12 @@ You can edit your configuration in `config.json`
     "pwr": 600,
     "guts": 600,
     "wit": 600
+  },
+  "llm": {
+    "enabled": false,
+    "model": "gpt-4o-mini",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-.."
   }
 }
 ```
@@ -126,6 +133,13 @@ You can edit your configuration in `config.json`
 `stat_caps` (object) - 
 - Maximum values for each stat. The bot will skip training stats that have reached their cap.
 - Prevents overtraining and allows focusing on other stats.
+
+`llm` (object) -
+- Controls the optional OpenAI-compatible integration used to make training decisions.
+- `enabled`: Set to `true` to allow the bot to call the configured model.
+- `model`: Model name to pass to the OpenAI client (e.g. `"gpt-4o-mini"`).
+- `base_url`: Override endpoint for self-hosted compatibles.
+- `api_key`: Your API key.
 
 Make sure the values match exactly as expected, typos might cause errors.
 
